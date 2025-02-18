@@ -29,8 +29,8 @@ Check out our live demo: [BlogCraft Demo](https://your-demo-url-here.com)
 
 1. **Clone the Repository:**
    ```bash
-   git clone https://github.com/your-username/blogcraft.git
-   cd blogcraft
+   git clone https://github.com/alphatechlogics/BlogCraft.git
+   cd BlogCraft
    ```
 
 2. **Create a Virtual Environment and Install Dependencies:**
