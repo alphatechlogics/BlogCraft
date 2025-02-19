@@ -84,8 +84,10 @@ if mode == "Blog Generation (OpenAI)":
 st.title("BlogCraft ✍️")
 st.markdown("Enter a blog topic and the related interests. BlogCraft will generate a detailed and engaging blog post that naturally incorporates your inputs.")
 
-blog_topic = st.text_input("Blog Topic", placeholder="e.g., The Future of Renewable Energy")
-interests = st.text_input("Relevant Interests", placeholder="e.g., Sustainability, Technology, Innovation")
+blog_topic = st.text_input(
+    "Blog Topic", placeholder="e.g., The Future of Renewable Energy")
+interests = st.text_input(
+    "Relevant Interests", placeholder="e.g., Sustainability, Technology, Innovation")
 
 if st.button("Generate Blog"):
     if blog_topic.strip() == "":
@@ -140,6 +142,7 @@ if st.button("Generate Blog"):
                     tokenizer=tokenizer,
                     max_length=1024,
                     do_sample=True,
+                    truncation=True,
                     top_k=10,
                     eos_token_id=tokenizer.eos_token_id,
                 )
@@ -160,7 +163,9 @@ if st.button("Generate Blog"):
 
             try:
                 blog_text = get_falcon_response(blog_topic, interests)
-                st.subheader("Generated Blog (Open Source - Falcon 7B Instruct)")
+                st.subheader(
+                    "Generated Blog (Open Source - Falcon 7B Instruct)")
                 st.write(blog_text)
             except Exception as e:
-                st.error(f"Error generating blog via the open source model: {e}")
+                st.error(
+                    f"Error generating blog via the open source model: {e}")
