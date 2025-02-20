@@ -23,7 +23,7 @@
 ## Demo 📺
 
 Check out our live demo:  
-[BlogCraft Demo](https://your-demo-url-here.com)
+[BlogCraft Demo](https://blogcrafts.streamlit.app/)
 
 ---
 
