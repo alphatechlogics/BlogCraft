@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 from langchain.prompts import PromptTemplate
 
-# Import Hugging Face libraries for the Falcon model
+# Import Hugging Face libraries for GPT-2
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 import torch
 
@@ -114,7 +114,7 @@ if st.button("Generate Blog"):
             ]
             try:
                 response = openai.chat.completions.create(
-                    model="gpt-4o",  # Change this model name if necessary.
+                    model="gpt-4o-mini-2024-07-18",  # or "gpt-4" if you have access
                     messages=messages,
                     temperature=0.1,
                 )
@@ -123,48 +123,54 @@ if st.button("Generate Blog"):
                 st.write(blog_text)
             except Exception as e:
                 st.error(f"Error generating blog via OpenAI: {e}")
+
         elif mode == "Blog Generation (Open Source)":
-            # Function to get blog response via Hugging Face Falcon-7B Instruct
-            def get_falcon_response(topic, interests):
-                model_id = "tiiuae/falcon-7b-instruct"
+            # Function to get blog response via GPT-2 from Hugging Face
+            def get_gpt2_response(topic, interests):
+                model_id = "gpt2"  # or "gpt2-medium", "gpt2-large", etc.
                 # Load tokenizer and model from Hugging Face hub
                 tokenizer = AutoTokenizer.from_pretrained(model_id)
                 model = AutoModelForCausalLM.from_pretrained(
                     model_id,
-                    torch_dtype=torch.bfloat16,
-                    trust_remote_code=True,
-                    device_map="auto"
+                    torch_dtype=torch.float32  # GPT-2 typically uses float32
                 )
                 # Create text-generation pipeline
                 gen_pipeline = pipeline(
                     "text-generation",
                     model=model,
                     tokenizer=tokenizer,
-                    max_length=1024,
+                    max_length=512,
                     do_sample=True,
-                    truncation=True,
-                    top_k=10,
-                    eos_token_id=tokenizer.eos_token_id,
+                    top_k=50,
+                    top_p=0.95,
+                    pad_token_id=tokenizer.eos_token_id
                 )
-                # Build a prompt that includes topic and interests
+
+                # Build a clearer, more concise prompt
                 prompt = (
-                    f"Write a comprehensive and engaging blog post in English. The blog topic is '{topic}', and it should naturally incorporate "
-                    f"the following relevant interests: {interests}. Ensure the blog is well-structured, clear, and appealing to a general audience."
+                    f"Blog Topic: {topic}\n"
+                    f"Relevant Interests: {interests}\n\n"
+                    "Write a detailed and engaging blog post in English on the above topic. "
+                    "Naturally address the listed interests, offering clear explanations, insights, and examples. "
+                    "Organize your post with an introduction, body, and conclusion. Avoid repeating these instructions. "
+                    "Keep your writing coherent, informative, and appealing to a general audience.\n\n"
                 )
+
                 sequences = gen_pipeline(
                     prompt,
-                    max_length=1024,
-                    do_sample=True,
-                    top_k=10,
                     num_return_sequences=1,
-                    eos_token_id=tokenizer.eos_token_id,
                 )
-                return sequences[0]["generated_text"]
+                generated_text = sequences[0]["generated_text"]
+
+                # Basic post-processing: remove the prompt from the beginning if GPT-2 repeats it
+                if generated_text.startswith(prompt):
+                    generated_text = generated_text[len(prompt):]
+
+                return generated_text.strip()
 
             try:
-                blog_text = get_falcon_response(blog_topic, interests)
-                st.subheader(
-                    "Generated Blog (Open Source - Falcon 7B Instruct)")
+                blog_text = get_gpt2_response(blog_topic, interests)
+                st.subheader("Generated Blog (Open Source - GPT-2)")
                 st.write(blog_text)
             except Exception as e:
                 st.error(
